@@ -6,51 +6,69 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
   PieChart,
   Pie,
   Cell,
-  Legend,
 } from 'recharts'
 
-const BALANCE_TREND = [
-  { month: 'Jan', balance: 28000 },
-  { month: 'Feb', balance: 31000 },
-  { month: 'Mar', balance: 29500 },
-  { month: 'Apr', balance: 35000 },
-  { month: 'May', balance: 38000 },
-  { month: 'Jun', balance: 42000 },
-  { month: 'Jul', balance: 40000 },
-  { month: 'Aug', balance: 44500 },
-  { month: 'Sep', balance: 47000 },
-  { month: 'Oct', balance: 48500 },
-  { month: 'Nov', balance: 49200 },
-  { month: 'Dec', balance: 50000 },
+/** Sample monthly income vs expense (₹) */
+const INCOME_VS_EXPENSE = [
+  { month: 'Jan', income: 52000, expense: 18000 },
+  { month: 'Feb', income: 52000, expense: 19500 },
+  { month: 'Mar', income: 54000, expense: 17200 },
+  { month: 'Apr', income: 52000, expense: 21000 },
+  { month: 'May', income: 55000, expense: 18800 },
+  { month: 'Jun', income: 58000, expense: 20500 },
+  { month: 'Jul', income: 52000, expense: 19200 },
+  { month: 'Aug', income: 52000, expense: 22100 },
+  { month: 'Sep', income: 56000, expense: 19800 },
+  { month: 'Oct', income: 52000, expense: 18400 },
+  { month: 'Nov', income: 52000, expense: 20100 },
+  { month: 'Dec', income: 62000, expense: 21500 },
 ]
 
-const EXPENSE_BY_CATEGORY = [
-  { name: 'Food', value: 6500 },
-  { name: 'Shopping', value: 4200 },
-  { name: 'Bills', value: 3800 },
-  { name: 'Transport', value: 2800 },
-  { name: 'Entertainment', value: 1700 },
+/** Sample category totals for pie chart */
+const CATEGORY_BREAKDOWN = [
+  { name: 'Food', value: 12400 },
+  { name: 'Shopping', value: 8200 },
+  { name: 'Bills', value: 9600 },
+  { name: 'Transport', value: 5100 },
+  { name: 'Entertainment', value: 4300 },
+  { name: 'Health', value: 3400 },
 ]
 
-const PIE_COLORS = ['#2563eb', '#7c3aed', '#db2777', '#ea580c', '#16a34a']
+const PIE_COLORS = [
+  '#2563eb',
+  '#7c3aed',
+  '#db2777',
+  '#ea580c',
+  '#16a34a',
+  '#0891b2',
+]
 
 function formatRupee(value) {
   return `₹${Number(value).toLocaleString('en-IN')}`
+}
+
+const tooltipStyle = {
+  borderRadius: '8px',
+  border: '1px solid #e2e8f0',
+  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
 }
 
 export default function Charts() {
   return (
     <section className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2">
       <div className="rounded-lg bg-white p-6 shadow-md">
-        <h2 className="mb-1 text-lg font-semibold text-gray-900">Balance trend</h2>
-        <p className="mb-4 text-sm text-gray-500">Monthly balance over the year</p>
+        <h2 className="mb-1 text-lg font-semibold text-gray-900">
+          Income vs expense
+        </h2>
+        <p className="mb-4 text-sm text-gray-500">Monthly comparison</p>
         <div className="h-[min(320px,50vh)] w-full min-h-[260px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
-              data={BALANCE_TREND}
+              data={INCOME_VS_EXPENSE}
               margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -65,21 +83,38 @@ export default function Charts() {
                 tickFormatter={(v) => `${Math.round(v / 1000)}k`}
               />
               <Tooltip
-                formatter={(value) => [formatRupee(value), 'Balance']}
+                formatter={(value, name) => [
+                  formatRupee(value),
+                  name === 'income' ? 'Income' : 'Expense',
+                ]}
                 labelFormatter={(label) => `Month: ${label}`}
-                contentStyle={{
-                  borderRadius: '8px',
-                  border: '1px solid #e2e8f0',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                }}
+                contentStyle={tooltipStyle}
+              />
+              <Legend
+                verticalAlign="top"
+                height={28}
+                formatter={(value) => (
+                  <span className="text-sm text-gray-700">
+                    {value === 'income' ? 'Income' : 'Expense'}
+                  </span>
+                )}
               />
               <Line
                 type="monotone"
-                dataKey="balance"
-                name="Balance"
-                stroke="#2563eb"
+                dataKey="income"
+                name="income"
+                stroke="#059669"
                 strokeWidth={2}
-                dot={{ r: 3, fill: '#2563eb' }}
+                dot={{ r: 3, fill: '#059669' }}
+                activeDot={{ r: 5 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="expense"
+                name="expense"
+                stroke="#e11d48"
+                strokeWidth={2}
+                dot={{ r: 3, fill: '#e11d48' }}
                 activeDot={{ r: 5 }}
               />
             </LineChart>
@@ -88,13 +123,15 @@ export default function Charts() {
       </div>
 
       <div className="rounded-lg bg-white p-6 shadow-md">
-        <h2 className="mb-1 text-lg font-semibold text-gray-900">Expense distribution</h2>
-        <p className="mb-4 text-sm text-gray-500">Breakdown by category</p>
+        <h2 className="mb-1 text-lg font-semibold text-gray-900">
+          Category breakdown
+        </h2>
+        <p className="mb-4 text-sm text-gray-500">Spending by category</p>
         <div className="h-[min(320px,50vh)] w-full min-h-[260px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={EXPENSE_BY_CATEGORY}
+                data={CATEGORY_BREAKDOWN}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
@@ -107,20 +144,16 @@ export default function Charts() {
                 }
                 labelLine={{ stroke: '#94a3b8' }}
               >
-                {EXPENSE_BY_CATEGORY.map((_, index) => (
+                {CATEGORY_BREAKDOWN.map((entry, index) => (
                   <Cell
-                    key={EXPENSE_BY_CATEGORY[index].name}
+                    key={entry.name}
                     fill={PIE_COLORS[index % PIE_COLORS.length]}
                   />
                 ))}
               </Pie>
               <Tooltip
                 formatter={(value) => formatRupee(value)}
-                contentStyle={{
-                  borderRadius: '8px',
-                  border: '1px solid #e2e8f0',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                }}
+                contentStyle={tooltipStyle}
               />
               <Legend
                 verticalAlign="bottom"
